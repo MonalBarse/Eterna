@@ -6,23 +6,21 @@ import { useAppDispatch } from './hooks';
 import { updateTokenData, incrementTime } from './tokensSlice';
 
 export function useTokenSocket() {
-  const dispatch = useAppDispatch();
+ const dispatch = useAppDispatch();
 
-  // Effect 1: The "Heartbeat" (Transactions & Price updates)
-  // Fires rapidly (every 100ms) to simulate high-frequency trading
   useEffect(() => {
+    // Make it fast: 100ms for "High Frequency" feel
     const interval = setInterval(() => {
-      // Pick random tokens to update
-      // In a real app, this data comes from the WS payload
-      const updates = Array.from({ length: 5 }).map(() => ({
-        id: `token-${Math.floor(Math.random() * 300)}`, // approximate ID matching
-        priceChange: (Math.random() - 0.5) * 0.001, // Small fluctuation
-        txIncrement: Math.random() > 0.5 ? 1 : 0,
-        volIncrement: Math.random() * 100,
+      const updates = Array.from({ length: 8 }).map(() => ({
+        id: `token-${Math.floor(Math.random() * 300)}`,
+        // Make price changes significant enough to trigger flash
+        priceChange: (Math.random() - 0.5) * 0.00005,
+        txIncrement: Math.random() > 0.7 ? 1 : 0,
+        volIncrement: Math.random() * 500,
       }));
 
       dispatch(updateTokenData(updates));
-    }, 200); // 200ms updates
+    }, 150); // <--- 150ms interval
 
     return () => clearInterval(interval);
   }, [dispatch]);
