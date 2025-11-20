@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -119,4 +119,33 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+/* Axiom-style fade scrollbar */
+.scroll-fade {
+  /* Firefox (hide by default) */
+  scrollbar-width: none;
+}
+
+.scroll-fade:hover {
+  scrollbar-width: thin;
+}
+
+/* WebKit (Chrome / Safari / Edge) */
+.scroll-fade::-webkit-scrollbar {
+  width: 3px;
+}
+
+.scroll-fade::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background-color: transparent; /* hidden until hover */
+}
+
+/* Lighter scrollbar thumb */
+.scroll-fade:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.58); /* subtle white */
+}
+
+/* Optional: subtle track */
+.scroll-fade::-webkit-scrollbar-track {
+  background: transparent;
 }
