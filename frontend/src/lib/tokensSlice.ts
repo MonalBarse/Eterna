@@ -1,25 +1,31 @@
 'use client';
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Token, MOCK_TOKENS } from './tokens';
+import { Token, getMockTokensByColumn } from './tokens';
 
 export interface TokensState {
   newPairs: Token[];
   finalStretch: Token[];
   migrated: Token[];
+  isLoading: boolean; // Added loading state
 }
 
+const initialData = getMockTokensByColumn();
+
 const initialState: TokensState = {
-  newPairs: MOCK_TOKENS,      // we can later replace with real data / per-column data
-  finalStretch: MOCK_TOKENS,
-  migrated: MOCK_TOKENS,
+  newPairs: initialData.new,
+  finalStretch: initialData.final,
+  migrated: initialData.migrated,
+  isLoading: false, // Default to false, set to true when you start fetching
 };
 
 const tokensSlice = createSlice({
   name: 'tokens',
   initialState,
   reducers: {
-    // placeholder; we’ll add more later
+    setLoading(state, action: PayloadAction<boolean>) {
+      state.isLoading = action.payload;
+    },
     setNewPairs(state, action: PayloadAction<Token[]>) {
       state.newPairs = action.payload;
     },
@@ -32,5 +38,6 @@ const tokensSlice = createSlice({
   },
 });
 
-export const { setNewPairs, setFinalStretch, setMigrated } = tokensSlice.actions;
+export const { setLoading, setNewPairs, setFinalStretch, setMigrated } =
+  tokensSlice.actions;
 export const tokensReducer = tokensSlice.reducer;
