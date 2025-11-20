@@ -90,9 +90,6 @@ export function TokenCard({ token }: { token: Token }) {
           className={`relative flex h-18 w-18 flex-shrink-0 items-center justify-center rounded-sm border border-slate-700 ${token.imgColor}`}
         >
           <DollarSign className="h-8 w-8 text-white" />
-          <div className="absolute bottom-0 right-0 flex h-4 w-4 items-center justify-center rounded-full border border-slate-700 bg-slate-900">
-            <Pencil className="h-2.5 w-2.5 text-slate-400" />
-          </div>
         </div>
         <span className="w-full truncate text-[9px] text-slate-500 text-center">
           {token.address}
