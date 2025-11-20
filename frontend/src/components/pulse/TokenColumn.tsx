@@ -16,7 +16,7 @@ export function TokenColumn({ title, tokens }: TokenColumnProps) {
   return (
     <div className="flex flex-col bg-[#05060f]/95">
       {/* Column header */}
-      <div className="flex items-center justify-between gap-2 border-b border-slate-800 px-4 py-3">
+      <div className="flex items-center justify-between gap-2 border border-slate-800 px-4 py-2">
         <h2 className="text-sm font-semibold tracking-tight text-slate-100 md:text-base">
           {title}
         </h2>
@@ -55,9 +55,7 @@ export function TokenColumn({ title, tokens }: TokenColumnProps) {
       </div>
 
       {/* Scrollable body */}
-      <div
-        className={`overflow-y-auto ${COLUMN_HEIGHT_CLASS} scroll-fade`}
-      >
+      <div className={`overflow-y-auto ${COLUMN_HEIGHT_CLASS} scroll-fade`}>
         {tokens.map((token) => (
           <TokenCard key={token.id} token={token} />
         ))}
