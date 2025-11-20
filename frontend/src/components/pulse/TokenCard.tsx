@@ -2,10 +2,15 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import {
-  TrendingUp, Target, Minus, Atom, Zap, DollarSign, Clipboard, Search, Users, Trophy, Crown
+  TrendingUp,
+  Target,
+  Zap,
+  DollarSign,
+  Clipboard,
+  Search,
+  Users,
 } from 'lucide-react';
 import type { Token } from '@/lib/tokens';
-// Import Dialog components
 import {
   Dialog,
   DialogContent,
@@ -13,159 +18,284 @@ import {
   DialogTitle,
   DialogDescription,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
-// ... keep IconTextBadge and PercentagePill helper functions as they are ...
-// (Re-paste them here if you are copy-pasting the whole file, otherwise just keep them)
-function IconTextBadge({ icon: Icon, value }: { icon: React.ElementType; value: string }) {
+// --- HELPERS ---
+
+// 1. Zero-load deterministic color generator
+const generateGradient = (id: string) => {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = id.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const c1 = `hsl(${hash % 360}, 70%, 50%)`;
+  const c2 = `hsl(${(hash + 40) % 360}, 70%, 40%)`;
+  return `linear-gradient(135deg, ${c1}, ${c2})`;
+};
+
+// 2. Time formatter (Matches screenshot: 1s, 58m, 9h)
+function formatTimeAgo(seconds: number) {
+  if (seconds < 60) return `${seconds}s`;
+  const m = Math.floor(seconds / 60);
+  if (m < 60) return `${m}m`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h`;
+  return `${Math.floor(h / 24)}d`;
+}
+
+function IconTextBadge({
+  icon: Icon,
+  value,
+}: {
+  icon: React.ElementType;
+  value: string;
+}) {
   return (
-    <div className="flex items-center gap-1 text-[10px] text-slate-400">
+    <div className="flex items-center gap-1 text-[10px] text-slate-400/80">
       <Icon className="h-3 w-3" />
-      {value && <span className="text-slate-50 font-medium">{value}</span>}
+      {value && <span className="text-slate-400 font-medium">{value}</span>}
     </div>
   );
 }
 
-function PercentagePill({ value, isPositive, icon: Icon }: { value: string; isPositive: boolean; icon: React.ElementType }) {
+function PercentagePill({
+  value,
+  isPositive,
+  icon: Icon,
+}: {
+  value: string;
+  isPositive: boolean;
+  icon: React.ElementType;
+}) {
   const colorClass = isPositive
-    ? 'border-emerald-500/40 bg-emerald-900/20 text-emerald-300'
-    : 'border-red-500/40 bg-red-900/20 text-red-300';
+    ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
+    : 'border-red-500/30 bg-red-500/10 text-red-400';
   return (
-    <div className={`flex items-center rounded-full px-2 py-[1px] text-[10px] leading-none border ${colorClass}`}>
-      <Icon className="mr-1 h-3 w-3" />
-      <span className="font-semibold">{value}</span>
+    <div
+      className={`flex items-center rounded-sm px-1.5 py-0.5 text-[10px] font-medium leading-none border ${colorClass}`}
+    >
+      <Icon className="mr-1 h-2.5 w-2.5" />
+      <span>{value}</span>
     </div>
   );
 }
 
-export function TokenCard({ token }: { token: Token }) {
-  // --- FLASH EFFECT LOGIC ---
+// --- COMPONENT ---
+
+function TokenCardComponent({ token }: { token: Token }) {
+  // Flash Effect State
   const [flashClass, setFlashClass] = useState('');
   const prevPrice = useRef(token.price);
 
+  // Trigger flash on price change
   useEffect(() => {
     if (token.price > prevPrice.current) {
-      setFlashClass('bg-emerald-500/10 duration-75');
-      setTimeout(() => setFlashClass('duration-1000'), 200);
+      setFlashClass('bg-emerald-500/5 transition-none');
+      setTimeout(() => setFlashClass('transition-all duration-700'), 50);
     } else if (token.price < prevPrice.current) {
-      setFlashClass('bg-red-500/10 duration-75');
-      setTimeout(() => setFlashClass('duration-1000'), 200);
+      setFlashClass('bg-red-500/5 transition-none');
+      setTimeout(() => setFlashClass('transition-all duration-700'), 50);
     }
     prevPrice.current = token.price;
   }, [token.price]);
 
-  // Existing styling logic
+  // Dynamic Styling
   const mcColor = token.change1m >= 0 ? 'text-emerald-400' : 'text-red-400';
-  const priceColor = token.change1m >= 0 ? 'text-emerald-300' : 'text-red-300';
+  const priceColor = token.change1m >= 0 ? 'text-emerald-400' : 'text-red-400';
   const txColor = token.change1m >= 0 ? 'bg-emerald-500' : 'bg-red-500';
 
-  // Mock Icon data
   const iconBarData = [
-    { icon: DollarSign, value: '$' },
-    { icon: Clipboard, value: '$' },
+    { icon: DollarSign, value: '' }, // Placeholder for "Bonding curve" icon
     { icon: Search, value: '' },
     { icon: Users, value: String(token.holders) },
+    { icon: Clipboard, value: '0' },
   ];
 
   return (
     <Dialog>
       <DialogTrigger asChild>
         <div
-          className={`flex cursor-pointer items-start justify-between border-b border-slate-800 bg-[#090a12] px-3 py-2.5 text-xs transition-colors hover:bg-slate-800 ${flashClass}`}
+          className={`group flex cursor-pointer items-start justify-between border-b border-slate-800/60 bg-[#090a12] px-3 py-3 text-xs hover:bg-slate-800/50 ${flashClass}`}
         >
-          {/* Left logo + address */}
-          <div className="flex w-20 flex-col items-center gap-1 pr-3">
-             {/* Use imgUrl if available, or fallback */}
-            <div className="relative flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-md border border-slate-700 bg-slate-900 overflow-hidden">
-               <span className="text-xs font-bold text-slate-600">IMG</span>
+          {/* Left: Avatar + Address */}
+          <div className="flex w-[72px] flex-col items-center gap-2 pr-3">
+            <div
+              className="relative flex h-18 w-18 flex-shrink-0 items-center justify-center rounded-md shadow-inner overflow-hidden border border-slate-700/50"
+              style={{ background: generateGradient(token.id) }}
+            >
+              {/* Placeholder text inside avatar if no image */}
+              <span className="text-lg font-bold text-white/40 mix-blend-overlay">
+                {token.ticker[0]}
+              </span>
             </div>
-            <span className="w-full truncate text-[9px] text-slate-500 text-center">
-              {token.address}
-            </span>
+
+            {/* Tooltip for Address */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="w-full truncate text-[9px] font-mono text-slate-500 text-center group-hover:text-slate-300 transition-colors">
+                  {token.address}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent className="bg-slate-950 border-slate-800 text-slate-300 text-[10px]">
+                <p>{token.address}</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
 
-          {/* Middle: title + metrics */}
-          <div className="flex flex-1 flex-col pt-1">
-            <div className="flex items-baseline justify-between gap-2">
-              <div className="min-w-0">
-                <div className="flex items-center gap-1">
-                  <span className="max-w-[150px] truncate text-[13px] font-semibold leading-none text-white">
-                    {token.name}
-                  </span>
-                  <span className="max-w-[120px] truncate text-[11px] leading-none text-slate-400">
-                    {token.ticker}
+          {/* Middle: Info & Metrics */}
+          <div className="flex flex-1 flex-col pt-0.5 min-w-0">
+            {/* Row 1: Name & Ticker */}
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <span className="truncate text-[13px] font-bold text-slate-200 hover:text-blue-400 transition-colors">
+                {token.name}
+              </span>
+              <span className="truncate text-[11px] font-medium text-slate-500">
+                {token.ticker}
+              </span>
+              <Clipboard className="h-3 w-3 text-slate-600 cursor-pointer hover:text-slate-400" />
+            </div>
+
+            {/* Row 2: Time (Green) + Icons */}
+            <div className="flex items-center gap-3 mb-2">
+              {/* THE TIME INDICATOR (Requirement: Green) */}
+              <span className="text-[11px] font-bold text-emerald-400 min-w-[20px]">
+                {formatTimeAgo(token.createdAgo)}
+              </span>
+
+              <div className="flex items-center gap-2.5 border-l border-slate-800 pl-3">
+                {iconBarData.map((data, idx) => (
+                  <IconTextBadge
+                    key={idx}
+                    icon={data.icon}
+                    value={data.value}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Row 3: Pills (Percentages) */}
+            <div className="flex flex-wrap gap-1.5">
+              <PercentagePill
+                value={`${token.change1m.toFixed(0)}%`}
+                isPositive={token.change1m > 0}
+                icon={TrendingUp}
+              />
+              <PercentagePill
+                value={`${token.buyPressure.toFixed(0)}%`}
+                isPositive={token.buyPressure > 50}
+                icon={Target}
+              />
+              <PercentagePill
+                value="0%"
+                isPositive={false}
+                icon={Target} // Placeholder for other metrics
+              />
+            </div>
+          </div>
+
+          {/* Right: Financials + Action */}
+          <div className="flex h-full min-w-[100px] flex-col items-end justify-between pl-2">
+            <div className="flex flex-col items-end gap-0.5">
+              <div className={`text-[16px] font-light tabular-nums ${mcColor}`}>
+                <span className="text-[12px] text-slate-500 font-medium mr-1">
+                  MC
+                </span>
+                $
+                {token.mc.toLocaleString(undefined, {
+                  maximumFractionDigits: 0,
+                })}
+              </div>
+
+              <div className="text-[12px] font-semibold text-slate-400 tabular-nums">
+                <span className="text-[9px] text-slate-600 font-medium mr-1">
+                  V
+                </span>
+                $
+                {token.vol.toLocaleString(undefined, {
+                  maximumFractionDigits: 0,
+                })}
+              </div>
+
+              <div className="mt-1 flex items-center gap-1.5 text-[10px]">
+                <span className={`font-mono ${priceColor}`}>
+                  ${token.price.toFixed(5)}
+                </span>
+                <div className="flex items-center gap-1 text-slate-500">
+                  <span className="text-[9px]">TX</span>
+                  <span className="text-slate-300 font-medium">
+                    {token.txCount}
                   </span>
                 </div>
+                <div
+                  className={`h-1.5 w-1.5 rounded-full ${txColor} animate-pulse`}
+                />
               </div>
             </div>
 
-            <div className="mt-2 flex flex-wrap gap-x-2 gap-y-1">
-              {iconBarData.map((data, idx) => (
-                <IconTextBadge key={idx} icon={data.icon} value={data.value} />
-              ))}
-            </div>
-
-             {/* Micro-metrics Pills */}
-            <div className="mt-2 flex flex-wrap gap-x-2 gap-y-1">
-               <PercentagePill value={`${token.change1m.toFixed(1)}%`} isPositive={token.change1m > 0} icon={TrendingUp} />
-               <PercentagePill value={`${token.buyPressure.toFixed(0)}%`} isPositive={token.buyPressure > 50} icon={Target} />
-            </div>
-          </div>
-
-          {/* Right: MC/Volume/Price + button */}
-          <div className="flex h-full min-w-[120px] flex-col items-end justify-between text-right">
-            <div className="flex flex-col">
-              <div className={`text-md font-extrabold leading-none ${mcColor}`}>
-                <span className="text-gray-500 font-light mr-1">MC</span>
-                ${token.mc.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-              </div>
-
-              <div className={`text-md mt-1 font-extrabold leading-none text-slate-300`}>
-                <span className="text-gray-500 font-light mr-1">V</span>
-                ${token.vol.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-              </div>
-
-              <div className="mt-2 flex items-center justify-end text-[9px] text-slate-400">
-                <span className={`text-[10px] font-mono ${priceColor} mr-2`}>
-                  ${token.price.toFixed(6)}
-                </span>
-                <span className="text-slate-500 mr-1">TX</span>
-                <span className="font-semibold text-white">{token.txCount}</span>
-                <div className={`ml-1 h-1.5 w-1.5 rounded-full ${txColor}`} />
-              </div>
-            </div>
-
-            <button className="mt-2 flex items-center justify-center gap-1 rounded-md bg-[#6366f1] px-3 py-1.5 text-[10px] font-bold text-white shadow-lg transition-colors hover:bg-[#4f46e5]">
-              <Zap className="h-3 w-3 fill-white" /> QUICK BUY
+            <button className=" flex mt-1 items-center justify-center gap-1.5 rounded bg-[#5c5e9e] hover:bg-[#4f5191] text-white px-2 py-1.5 text-[10px] font-bold transition-all shadow-lg hover:shadow-xl">
+              <Zap className="h-3 w-3 fill-white" />0 SOL
             </button>
           </div>
         </div>
       </DialogTrigger>
 
-      {/* MODAL CONTENT (Requirement: Modal) */}
-      <DialogContent className="bg-[#090a12] border-slate-800 text-slate-100">
+      {/* Modal Content */}
+      <DialogContent className="bg-[#0a0b14] border-slate-800 text-slate-100 max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            {token.name} <span className="text-slate-500 text-sm">({token.ticker})</span>
+          <DialogTitle className="flex items-center gap-2 text-xl">
+            {token.name}{' '}
+            <span className="text-slate-500 text-base font-normal">
+              ({token.ticker})
+            </span>
           </DialogTitle>
-          <DialogDescription>
-             Contract Address: <span className="font-mono text-xs bg-slate-800 px-1 py-0.5 rounded">{token.address}</span>
+          <DialogDescription className="text-slate-500">
+            <span className="text-xs font-mono bg-slate-900 px-2 py-1 rounded select-all">
+              {token.address}
+            </span>
           </DialogDescription>
         </DialogHeader>
-        <div className="grid grid-cols-2 gap-4 py-4">
-           <div className="bg-slate-900 p-3 rounded border border-slate-800">
-              <div className="text-xs text-slate-400">Market Cap</div>
-              <div className="text-xl font-bold text-emerald-400">${token.mc.toLocaleString()}</div>
-           </div>
-           <div className="bg-slate-900 p-3 rounded border border-slate-800">
-              <div className="text-xs text-slate-400">Transactions</div>
-              <div className="text-xl font-bold text-white">{token.txCount}</div>
-           </div>
+
+        <div className="grid grid-cols-2 gap-3 my-2">
+          <div className="bg-slate-900/50 p-3 rounded border border-slate-800/50">
+            <div className="text-[10px] uppercase text-slate-500 font-bold tracking-wider">
+              Market Cap
+            </div>
+            <div className="text-lg font-mono font-light text-emerald-400">
+              ${token.mc.toLocaleString()}
+            </div>
+          </div>
+          <div className="bg-slate-900/50 p-3 rounded border border-slate-800/50">
+            <div className="text-[10px] uppercase text-slate-500 font-bold tracking-wider">
+              Volume
+            </div>
+            <div className="text-lg font-mono font-bold text-slate-200">
+              ${token.vol.toLocaleString()}
+            </div>
+          </div>
         </div>
-        <div className="w-full h-32 bg-slate-900/50 rounded flex items-center justify-center text-slate-500 text-sm border border-slate-800 border-dashed">
-            Chart Visualization Placeholder
+
+        <div className="flex items-center justify-center h-32 bg-gradient-to-b from-slate-900/20 to-slate-900/50 border border-slate-800 border-dashed rounded-lg text-slate-600 text-sm">
+          <span>Chart Data Unavailable</span>
         </div>
       </DialogContent>
     </Dialog>
   );
 }
+
+// --- OPTIMIZATION ---
+// This is critical for "Performance: <100ms interactions"
+// We MUST include createdAgo in the comparison so the timer updates.
+export const TokenCard = React.memo(TokenCardComponent, (prev, next) => {
+  return (
+    prev.token.price === next.token.price &&
+    prev.token.vol === next.token.vol &&
+    prev.token.change1m === next.token.change1m &&
+    prev.token.txCount === next.token.txCount &&
+    prev.token.createdAgo === next.token.createdAgo // <--- FIX: Ensure time updates trigger re-render
+  );
+});
