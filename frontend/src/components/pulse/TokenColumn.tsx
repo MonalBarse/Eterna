@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { Token, MOCK_TOKENS } from '@/lib/tokens';
+import { Token } from '@/lib/tokens'; // Ensure this imports the Interface, not the deleted mock data
 import { TokenCard } from '@/components/pulse/TokenCard';
 import { Zap, Menu, SlidersHorizontal } from 'lucide-react';
 
@@ -14,14 +14,14 @@ interface TokenColumnProps {
 
 export function TokenColumn({ title, tokens }: TokenColumnProps) {
   return (
-    <div className="flex flex-col bg-[#05060f]/95">
+    <div className="flex flex-col bg-[#05060f]/95 border-r border-slate-800 last:border-r-0">
       {/* Column header */}
-      <div className="flex items-center justify-between gap-2 border border-slate-800 px-4 py-2">
-        <h2 className="text-sm font-semibold tracking-tight text-slate-100 md:text-base">
+      <div className="flex items-center justify-between gap-2 border-b border-slate-800 px-3 py-2 bg-[#05060f]">
+        <h2 className="text-sm font-semibold tracking-tight text-slate-100">
           {title}
         </h2>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           {/* Group 1: Zap & Menu */}
           <div className="flex items-center rounded-md border border-slate-800 bg-slate-900/50 p-[2px]">
             <button className="flex items-center gap-1 rounded-sm px-2 py-1 text-[10px] text-slate-400 transition-colors hover:bg-slate-800 hover:text-white">
@@ -36,37 +36,37 @@ export function TokenColumn({ title, tokens }: TokenColumnProps) {
 
           {/* Group 2: P1 P2 P3 */}
           <div className="flex items-center rounded-md border border-slate-800 bg-slate-900/50 p-[2px]">
-            <button className="rounded-sm px-2 py-1 text-[10px] font-medium text-blue-400 transition-colors hover:bg-slate-800">
+            <button className="rounded-sm px-1.5 py-1 text-[9px] font-medium text-blue-400 bg-slate-800">
               P1
             </button>
-            <button className="rounded-sm px-2 py-1 text-[10px] font-medium text-slate-400 transition-colors hover:bg-slate-800 hover:text-white">
+            <button className="rounded-sm px-1.5 py-1 text-[9px] font-medium text-slate-500 hover:text-slate-300">
               P2
             </button>
-            <button className="rounded-sm px-2 py-1 text-[10px] font-medium text-slate-400 transition-colors hover:bg-slate-800 hover:text-white">
+            <button className="rounded-sm px-1.5 py-1 text-[9px] font-medium text-slate-500 hover:text-slate-300">
               P3
             </button>
           </div>
 
           {/* Sliders Icon */}
-          <button className="ml-1 text-slate-400 transition-colors hover:text-white">
-            <SlidersHorizontal className="h-4 w-4" />
+          <button className="text-slate-500 hover:text-white">
+            <SlidersHorizontal className="h-3.5 w-3.5" />
           </button>
         </div>
       </div>
 
       {/* Scrollable body */}
       <div className={`overflow-y-auto ${COLUMN_HEIGHT_CLASS} scroll-fade`}>
+        {/* We assume tokens are passed from the parent (Page.tsx) which gets them from Redux */}
         {tokens.map((token) => (
           <TokenCard key={token.id} token={token} />
         ))}
 
-        {/* Fill with placeholders to mimic long list */}
-        {Array.from({ length: 15 }).map((_, idx) => (
-          <TokenCard
-            key={`placeholder-${idx}`}
-            token={MOCK_TOKENS[idx % MOCK_TOKENS.length]}
-          />
-        ))}
+        {/* Empty state if no tokens */}
+        {tokens.length === 0 && (
+           <div className="flex h-20 items-center justify-center text-xs text-slate-600">
+             Loading tokens...
+           </div>
+        )}
       </div>
     </div>
   );
