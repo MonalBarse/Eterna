@@ -123,7 +123,7 @@ function TokenCardComponent({ token }: { token: Token }) {
           className={`group flex cursor-pointer items-start justify-between border-b border-slate-800/60 bg-[#090a12] px-3 py-3 text-xs hover:bg-slate-800/50 ${flashClass}`}
         >
           {/* Left: Avatar + Address */}
-          <div className="flex w-[72px] flex-col items-center gap-2 pr-3">
+          <div className="flex w-1/6 flex-col items-center gap-2 pr-3">
             <div
               className="relative flex h-18 w-18 flex-shrink-0 items-center justify-center rounded-md shadow-inner overflow-hidden border border-slate-700/50"
               style={{ background: generateGradient(token.id) }}

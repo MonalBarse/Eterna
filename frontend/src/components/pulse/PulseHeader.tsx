@@ -68,7 +68,7 @@ export function PulseHeader({ currentSort, onSortChange }: PulseHeaderProps) {
 
         {/* Requirement: Popover/Variety - Implementing a simple HTML select for speed if Popover component is missing, or use custom dropdown */}
         <div className="relative group">
-          <button className="rounded-full border border-slate-700 bg-slate-900/50 px-3 py-1 text-[11px] font-semibold hover:bg-slate-800">
+          <button className="rounded-full border border-slate-700 bg-slate-900/50 px-2 py-1 text-[11px] font-semibold hover:bg-slate-800">
             Display ▾
           </button>
           {/* Simple CSS Dropdown (Popover equivalent) */}
