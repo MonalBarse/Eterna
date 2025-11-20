@@ -1,98 +1,90 @@
 // src/lib/tokens.ts
+
 export type ColumnType = 'new' | 'final' | 'migrated';
 
+export interface TokenMetric {
+  value: string;
+  color: 'green' | 'red' | 'blue' | 'slate';
+  label?: string;
+}
+
 export interface Token {
-  id: number;
+  id: string;
   column: ColumnType;
   name: string;
   ticker: string;
   address: string;
-  mc: number;
-  vol: number;
+  imgUrl: string; // Placeholder for character images
+
+  // Time & Status
+  createdAgo: number; // in seconds, will auto-increment
+  badges: string[]; // ['DS', 'Bonding: 99.8%']
+
+  // Core Metrics
+  mc: number;     // Market Cap
+  vol: number;    // Volume
+  txCount: number;
   price: number;
-  tx: number;
-  color: 'green' | 'red';
-  progress: string;
-  imgColor: string;
+
+  // Micro-metrics (The small badges/pills)
+  holders: number;
+  buyPressure: number; // 0-100, determines the bar width
+  change1m: number;    // % change
+  change5m: number;    // % change
+
+  // Visual State
+  isHot: boolean; // Adds a fire icon or distinct border
 }
 
-export const MOCK_TOKENS: Token[] = [
-  {
-    id: 1,
-    column: 'new',
-    name: 'PUMP',
-    ticker: 'PUMP Token',
-    address: 'H2ha...pump',
-    mc: 4.38,
-    vol: 0.521,
-    price: 0.023,
-    tx: 5,
-    color: 'green',
-    progress: '0/1',
-    imgColor: 'bg-emerald-500',
-  },
-  {
-    id: 2,
-    column: 'final',
-    name: 'ZINO',
-    ticker: 'ZinoSolCoin',
-    address: 'A9B1...L9W',
-    mc: 65.64,
-    vol: 1.8,
-    price: 0.00329,
-    tx: 12,
-    color: 'red',
-    progress: '1/1',
-    imgColor: 'bg-blue-600',
-  },
-  {
-    id: 3,
-    column: 'migrated',
-    name: 'DOGGCOIN',
-    ticker: 'DOGGCOIN',
-    address: 'QenP...q4ms',
-    mc: 41.7,
-    vol: 1.4,
-    price: 0.00004,
-    tx: 8,
-    color: 'green',
-    progress: '0/10',
-    imgColor: 'bg-yellow-400',
-  },
-  {
-    id: 4,
-    column: 'new',
-    name: 'MOONSHOT',
-    ticker: 'MOON Token',
-    address: 'M00N...SHOT',
-    mc: 12.5,
-    vol: 0.9,
-    price: 0.015,
-    tx: 3,
-    color: 'green',
-    progress: '0/5',
-    imgColor: 'bg-purple-500',
-  },
-  {
-    id: 5,
-    column: 'final',
-    name: 'STARLINK',
-    ticker: 'STAR Token',
-    address: 'STAR...LINK',
-    mc: 89.3,
-    vol: 2.3,
-    price: 0.045,
-    tx: 15,
-    color: 'red',
-    progress: '2/2',
-    imgColor: 'bg-pink-500',
-  },
-];
+// --- NAMES COMPONENT GENERATOR ---
+const PREFIXES = ['Elon', 'Doge', 'Pepe', 'Moon', 'Safe', 'Baby', 'Super', 'Mega', 'Chad', 'Ape', 'Cat', 'Inu'];
+const SUFFIXES = ['AI', 'GPT', 'Moon', 'Rocket', 'Finance', 'Swap', 'Coin', 'DAO', 'Gem', 'Bet', 'Lab', 'Base'];
 
-export function getMockTokensByColumn() {
+// Helper to generate random float
+const rand = (min: number, max: number) => Math.random() * (max - min) + min;
+const randInt = (min: number, max: number) => Math.floor(rand(min, max));
+const choice = <T>(arr: T[]): T => arr[randInt(0, arr.length)];
+
+export function generateMockTokens(count: number = 300): { [key in ColumnType]: Token[] } {
+  const tokens: Token[] = [];
+
+  for (let i = 0; i < count; i++) {
+    const isNew = i < 100;
+    const isFinal = i >= 100 && i < 200;
+    const column: ColumnType = isNew ? 'new' : isFinal ? 'final' : 'migrated';
+
+    // Realistic MC distribution based on column
+    const baseMc = isNew ? 5000 : isFinal ? 50000 : 500000;
+    const mc = baseMc * rand(0.5, 5);
+
+    tokens.push({
+      id: `token-${i}`,
+      column,
+      name: `${choice(PREFIXES)}${choice(SUFFIXES)}`,
+      ticker: choice(SUFFIXES).toUpperCase(),
+      address: Math.random().toString(36).substring(2, 8) + '...pump',
+      imgUrl: `/avatars/${randInt(1, 10)}.png`, // You'll need placeholder images
+
+      createdAgo: isNew ? randInt(0, 120) : randInt(300, 86400),
+      badges: Math.random() > 0.7 ? ['DS', 'Bonding: 98%'] : [],
+
+      mc,
+      vol: mc * rand(0.1, 0.5),
+      txCount: randInt(5, 5000),
+      price: rand(0.0000001, 0.01),
+
+      holders: randInt(10, 1000),
+      buyPressure: rand(20, 90),
+      change1m: rand(-10, 20),
+      change5m: rand(-30, 50),
+
+      isHot: Math.random() > 0.9,
+    });
+  }
+
   return {
-    new: MOCK_TOKENS.filter((t) => t.column === 'new'),
-    final: MOCK_TOKENS.filter((t) => t.column === 'final'),
-    migrated: MOCK_TOKENS.filter((t) => t.column === 'migrated'),
+    new: tokens.filter(t => t.column === 'new').sort((a, b) => a.createdAgo - b.createdAgo),
+    final: tokens.filter(t => t.column === 'final').sort((a, b) => b.mc - a.mc),
+    migrated: tokens.filter(t => t.column === 'migrated').sort((a, b) => b.mc - a.mc),
   };
 }
