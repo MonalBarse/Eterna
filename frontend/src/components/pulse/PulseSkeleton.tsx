@@ -70,10 +70,18 @@ function ColumnSkeleton() {
 
 export function PulseSkeleton() {
   return (
-    <section className="grid lg:grid-cols-3 border border-slate-800">
-      <ColumnSkeleton />
-      <ColumnSkeleton />
-      <ColumnSkeleton />
-    </section>
+    <>
+      {/* Desktop skeleton layout mirrors the 3-column grid */}
+      <section className="hidden lg:grid lg:grid-cols-3 border border-slate-800 h-full">
+        <ColumnSkeleton />
+        <ColumnSkeleton />
+        <ColumnSkeleton />
+      </section>
+
+      {/* Mobile skeleton layout mirrors the single-column/tabs container height */}
+      <section className="lg:hidden h-full flex flex-col border border-slate-800 rounded-md overflow-hidden">
+        <ColumnSkeleton />
+      </section>
+    </>
   );
 }

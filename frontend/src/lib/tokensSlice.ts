@@ -1,6 +1,6 @@
 // src/lib/tokensSlice.ts
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Token, generateMockTokens } from './tokens';
+import { Token } from './tokens';
 
 export type SortKey = 'mc' | 'vol' | 'change1m';
 
@@ -17,9 +17,6 @@ export interface TokensState {
   sortKey: SortKey;
   isLoading: boolean;
 }
-
-// Generate initial 300+ tokens
-const initialData = generateMockTokens(300);
 
 // Helper to sort tokens
 const sortTokens = (tokens: Token[], sortKey: SortKey): Token[] => {
@@ -45,16 +42,18 @@ const buildTokenMap = (
   return map;
 };
 
+// Start with an empty store; React Query will hydrate via hydrateTokens.
 const initialState: TokensState = {
-  newPairs: initialData.new,
-  finalStretch: initialData.final,
-  migrated: initialData.migrated,
-  sortedNewPairs: sortTokens(initialData.new, 'mc'),
-  sortedFinalStretch: sortTokens(initialData.final, 'mc'),
-  sortedMigrated: sortTokens(initialData.migrated, 'mc'),
-  tokenMap: buildTokenMap(initialData.new, initialData.final, initialData.migrated),
+  newPairs: [],
+  finalStretch: [],
+  migrated: [],
+  sortedNewPairs: [],
+  sortedFinalStretch: [],
+  sortedMigrated: [],
+  tokenMap: {},
   sortKey: 'mc',
-  isLoading: false,
+  // Initial page load shows skeleton until React Query resolves
+  isLoading: true,
 };
 
 const tokensSlice = createSlice({

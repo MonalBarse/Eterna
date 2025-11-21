@@ -8,21 +8,31 @@ import { cn } from '@/lib/utils';
 const DEFAULT_HEIGHT_CLASS =
   'h-[calc(100vh-8rem)] md:h-[calc(100vh-9rem)] lg:h-[calc(100vh-10rem)]';
 
+const INITIAL_LIMIT = 80; // Initial number of tokens per column
+const LOAD_CHUNK = 60; // How many more tokens to reveal when scrolling near bottom
+const LOAD_THRESHOLD_PX = 200; // Distance from bottom to trigger progressive load
+
 interface TokenColumnProps {
   title: string;
   tokens: Token[];
+  chain: 'SOL' | 'BNB';
   scrollClass?: string;
   // New prop to override height
 }
 
-export function TokenColumn({ title, tokens, scrollClass }: TokenColumnProps) {
+export function TokenColumn({ title, tokens, chain, scrollClass }: TokenColumnProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [visibleRange, setVisibleRange] = useState({ start: 0, end: 20 });
+  const [limit, setLimit] = useState(() => Math.min(INITIAL_LIMIT, tokens.length || INITIAL_LIMIT));
   const ITEM_HEIGHT = 120; // Approximate height of each TokenCard
   const BUFFER = 5; // Extra items to render above/below viewport
-  const totalHeight = tokens.length * ITEM_HEIGHT;
 
-  // Optimized virtualization: only render visible items + buffer
+  // Ensure limit never exceeds number of tokens
+  const effectiveLength = Math.min(tokens.length, limit || INITIAL_LIMIT);
+  const totalHeight = effectiveLength * ITEM_HEIGHT;
+
+  // Optimized virtualization + progressive loading: only render visible items + buffer,
+  // and reveal more tokens as user scrolls near the bottom.
   useEffect(() => {
     const scrollElement = scrollRef.current;
     if (!scrollElement) return;
@@ -30,14 +40,21 @@ export function TokenColumn({ title, tokens, scrollClass }: TokenColumnProps) {
     const handleScroll = () => {
       const scrollTop = scrollElement.scrollTop;
       const containerHeight = scrollElement.clientHeight;
-      
+      const scrollHeight = scrollElement.scrollHeight;
+
       const start = Math.max(0, Math.floor(scrollTop / ITEM_HEIGHT) - BUFFER);
       const end = Math.min(
-        tokens.length,
+        effectiveLength,
         Math.ceil((scrollTop + containerHeight) / ITEM_HEIGHT) + BUFFER
       );
 
       setVisibleRange({ start, end });
+
+      // Progressive "load more" when user scrolls near the bottom
+      const nearBottom = scrollTop + containerHeight >= scrollHeight - LOAD_THRESHOLD_PX;
+      if (nearBottom && limit < tokens.length) {
+        setLimit((prev) => Math.min(tokens.length, prev + LOAD_CHUNK));
+      }
     };
 
     // Initial calculation
@@ -45,12 +62,12 @@ export function TokenColumn({ title, tokens, scrollClass }: TokenColumnProps) {
 
     scrollElement.addEventListener('scroll', handleScroll, { passive: true });
     return () => scrollElement.removeEventListener('scroll', handleScroll);
-  }, [tokens.length]);
+  }, [effectiveLength, limit, tokens.length]);
 
   // Memoize visible tokens to prevent unnecessary recalculations
   const visibleTokens = useMemo(
-    () => tokens.slice(visibleRange.start, visibleRange.end),
-    [tokens, visibleRange.start, visibleRange.end]
+    () => tokens.slice(visibleRange.start, Math.min(visibleRange.end, effectiveLength)),
+    [tokens, visibleRange.start, visibleRange.end, effectiveLength]
   );
 
   return (
@@ -61,35 +78,59 @@ export function TokenColumn({ title, tokens, scrollClass }: TokenColumnProps) {
           {title}
         </h2>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5" aria-label={`${title} controls`} role="group">
           {/* Group 1: Zap & Menu */}
           <div className="flex items-center rounded-md border border-slate-800 bg-slate-900/50 p-[2px]">
-            <button className="flex items-center gap-1 rounded-sm px-2 py-1 text-[10px] text-slate-400 transition-colors hover:bg-slate-800 hover:text-white">
-              <Zap className="h-3 w-3" />
+            <button
+              type="button"
+              aria-label="Boost column"
+              className="flex items-center gap-1 rounded-sm px-2 py-1 text-[10px] text-slate-400 transition-colors hover:bg-slate-800 hover:text-white"
+            >
+              <Zap className="h-3 w-3" aria-hidden="true" />
               <span className="font-medium">0</span>
             </button>
-            <div className="mx-[1px] h-3 w-[1px] bg-slate-800"></div>
-            <button className="flex items-center rounded-sm px-2 py-1 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white">
-              <Menu className="h-3 w-3" />
+            <div className="mx-[1px] h-3 w-[1px] bg-slate-800" aria-hidden="true"></div>
+            <button
+              type="button"
+              aria-label="Column menu"
+              className="flex items-center rounded-sm px-2 py-1 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white"
+            >
+              <Menu className="h-3 w-3" aria-hidden="true" />
             </button>
           </div>
 
           {/* Group 2: P1 P2 P3 */}
           <div className="flex items-center rounded-md border border-slate-800 bg-slate-900/50 p-[2px]">
-            <button className="rounded-sm px-1.5 py-1 text-[9px] font-medium text-blue-400 bg-slate-800">
+            <button
+              type="button"
+              aria-label="Show phase P1"
+              className="rounded-sm px-1.5 py-1 text-[9px] font-medium text-blue-400 bg-slate-800"
+            >
               P1
             </button>
-            <button className="rounded-sm px-1.5 py-1 text-[9px] font-medium text-slate-500 hover:text-slate-300">
+            <button
+              type="button"
+              aria-label="Show phase P2"
+              className="rounded-sm px-1.5 py-1 text-[9px] font-medium text-slate-500 hover:text-slate-300"
+            >
               P2
             </button>
-            <button className="rounded-sm px-1.5 py-1 text-[9px] font-medium text-slate-500 hover:text-slate-300">
+            <button
+              type="button"
+              aria-label="Show phase P3"
+              className="rounded-sm px-1.5 py-1 text-[9px] font-medium text-slate-500 hover:text-slate-300"
+            >
               P3
             </button>
           </div>
 
           {/* Sliders Icon */}
-          <button className="text-slate-500 hover:text-white">
-            <SlidersHorizontal className="h-3.5 w-3.5" />
+          <button
+            type="button"
+            aria-label="Filter column"
+            className="text-slate-500 hover:text-white"
+          >
+            <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -101,11 +142,11 @@ export function TokenColumn({ title, tokens, scrollClass }: TokenColumnProps) {
       >
         {tokens.length > 0 ? (
           <div style={{ height: totalHeight, position: 'relative' }}>
-            <div
+              <div
               style={{ transform: `translateY(${visibleRange.start * ITEM_HEIGHT}px)` }}
             >
               {visibleTokens.map((token) => (
-                <TokenCard key={token.id} token={token} />
+                <TokenCard key={token.id} token={token} chain={chain} />
               ))}
             </div>
           </div>

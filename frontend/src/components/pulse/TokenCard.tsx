@@ -55,15 +55,25 @@ function formatTimeAgo(seconds: number) {
 function IconTextBadge({
   icon: Icon,
   value,
+  label,
 }: {
   icon: React.ElementType;
   value: string;
+  label: string;
 }) {
   return (
-    <div className="flex items-center gap-1 text-[10px] text-slate-400/80">
-      <Icon className="h-3 w-3" />
-      {value && <span className="text-slate-400 font-medium">{value}</span>}
-    </div>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div
+          className="flex cursor-default items-center gap-1 text-[10px] text-slate-400/80"
+          aria-label={label}
+        >
+          <Icon className="h-3 w-3" aria-hidden="true" />
+          {value && <span className="text-slate-400 font-medium">{value}</span>}
+        </div>
+      </TooltipTrigger>
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
   );
 }
 
@@ -91,7 +101,7 @@ function PercentagePill({
 
 // --- COMPONENT ---
 
-function TokenCardComponent({ token }: { token: Token }) {
+function TokenCardComponent({ token, chain }: { token: Token; chain: 'SOL' | 'BNB' }) {
   // Flash Effect State
   const [flashClass, setFlashClass] = useState('');
   const prevPrice = useRef(token.price);
@@ -127,11 +137,11 @@ function TokenCardComponent({ token }: { token: Token }) {
   };
 
   const iconBarData = [
-    { icon: SearchIcon, value: '' }, // Placeholder for "Bonding curve" icon
-    { icon: Users, value: String(token.holders) },
-    { icon: CandlestickChart, value: '' },
-    { icon: TrophyIcon, value: '0' },
-    { icon: Crown, value: '0' },
+    { icon: SearchIcon, value: '', label: 'Bonding curve' },
+    { icon: Users, value: String(token.holders), label: 'Holders' },
+    { icon: CandlestickChart, value: '', label: 'Chart' },
+    { icon: TrophyIcon, value: 'TBD', label: 'Trophies' },
+    { icon: Crown, value: 'TBD', label: 'Crown score' },
   ];
 
   return (
@@ -188,7 +198,18 @@ function TokenCardComponent({ token }: { token: Token }) {
                 <span className="truncate text-[11px] font-medium text-slate-500">
                   {token.ticker}
                 </span>
-                <Clipboard className="h-3 w-3 text-slate-600 cursor-pointer hover:text-slate-400" />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Copy token address"
+                      className="text-slate-600 hover:text-slate-400"
+                    >
+                      <Clipboard className="h-3 w-3" aria-hidden="true" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>Copy address</TooltipContent>
+                </Tooltip>
               </div>
 
               {/* Row 2: Time (Green) + Icons */}
@@ -204,6 +225,7 @@ function TokenCardComponent({ token }: { token: Token }) {
                       key={idx}
                       icon={data.icon}
                       value={data.value}
+                      label={data.label}
                     />
                   ))}
                 </div>
@@ -263,12 +285,18 @@ function TokenCardComponent({ token }: { token: Token }) {
                 </div>
                 <div
                   className={`h-1.5 w-1.5 rounded-full ${txColor} animate-pulse`}
+                  aria-hidden="true"
                 />
               </div>
             </div>
 
-            <button className=" flex mt-1 items-center justify-center gap-1.5 rounded-2xl bg-indigo-600 hover:bg-[#4f5191] text-white px-2 py-1.5 text-[10px] font-bold transition-all shadow-lg hover:shadow-xl">
-              <Zap className="h-3 w-3 fill-white" />0 SOL
+            <button
+              className="flex mt-1 items-center justify-center gap-1.5 rounded-2xl bg-indigo-600 hover:bg-[#4f5191] text-white px-2 py-1.5 text-[10px] font-bold transition-all shadow-lg hover:shadow-xl"
+              type="button"
+              aria-label={`Buy with ${chain}`}
+            >
+              <Zap className="h-3 w-3 fill-white" />
+              0 {chain}
             </button>
           </div>
         </div>
@@ -326,6 +354,7 @@ export const TokenCard = React.memo(TokenCardComponent, (prev, next) => {
     prev.token.vol === next.token.vol &&
     prev.token.change1m === next.token.change1m &&
     prev.token.txCount === next.token.txCount &&
-    prev.token.createdAgo === next.token.createdAgo // <--- FIX: Ensure time updates trigger re-render
+    prev.token.createdAgo === next.token.createdAgo &&
+    prev.chain === next.chain
   );
 });

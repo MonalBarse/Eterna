@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAppDispatch } from '@/lib/hooks';
-import { hydrateTokens } from '@/lib/tokensSlice';
+import { hydrateTokens, setLoading } from '@/lib/tokensSlice';
 import { Token } from './tokens';
 
 export type TokensResponse = {
@@ -32,13 +32,16 @@ export function useTokensQuery() {
     refetchOnWindowFocus: false,
   });
 
-  // When fresh data arrives, hydrate Redux. Using useEffect avoids
-  // relying on callback options that may differ across React Query versions.
+  // When fresh data arrives, hydrate Redux and switch off the skeleton.
+  // We also switch off the skeleton if the query errors so the error UI is visible.
   useEffect(() => {
     if (queryResult.data) {
       dispatch(hydrateTokens(queryResult.data));
     }
-  }, [dispatch, queryResult.data]);
+    if (queryResult.data || queryResult.error) {
+      dispatch(setLoading(false));
+    }
+  }, [dispatch, queryResult.data, queryResult.error]);
 
   return queryResult;
 }
