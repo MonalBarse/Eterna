@@ -61,6 +61,28 @@ const tokensSlice = createSlice({
   name: 'tokens',
   initialState,
   reducers: {
+    // Hydrate state from an external source (e.g. React Query)
+    hydrateTokens(
+      state,
+      action: PayloadAction<{
+        new: Token[];
+        final: Token[];
+        migrated: Token[];
+      }>
+    ) {
+      const { new: newPairs, final: finalStretch, migrated } = action.payload;
+
+      state.newPairs = newPairs;
+      state.finalStretch = finalStretch;
+      state.migrated = migrated;
+
+      state.sortedNewPairs = sortTokens(newPairs, state.sortKey);
+      state.sortedFinalStretch = sortTokens(finalStretch, state.sortKey);
+      state.sortedMigrated = sortTokens(migrated, state.sortKey);
+
+      state.tokenMap = buildTokenMap(newPairs, finalStretch, migrated);
+    },
+
     // Standard Setters
     setLoading(state, action: PayloadAction<boolean>) {
       state.isLoading = action.payload;
@@ -133,5 +155,11 @@ const tokensSlice = createSlice({
   },
 });
 
-export const { setLoading, setSortKey, incrementTime, updateTokenData } = tokensSlice.actions;
+export const {
+  hydrateTokens,
+  setLoading,
+  setSortKey,
+  incrementTime,
+  updateTokenData,
+} = tokensSlice.actions;
 export const tokensReducer = tokensSlice.reducer;

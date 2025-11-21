@@ -252,7 +252,8 @@ export function generateMockTokens(count: number = 300): {
       name: `${choice(PREFIXES)}${choice(SUFFIXES)}`,
       ticker: choice(SUFFIXES).toUpperCase(),
       address: Math.random().toString(36).substring(2, 8) + '...pump',
-      imgUrl: `/avatars/${randInt(1, 10)}.png`, // You'll need placeholder images
+      // Use small local avatars from /public/1-55.jpg for realistic visuals
+      imgUrl: `/${randInt(1, 70)}.jpg`,
 
       createdAgo: isNew ? randInt(0, 120) : randInt(300, 86400),
       badges: Math.random() > 0.7 ? ['DS', 'Bonding: 98%'] : [],

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
+import Image from 'next/image';
 import {
   TrendingUp,
   Target,
@@ -145,11 +146,19 @@ function TokenCardComponent({ token }: { token: Token }) {
               className={`p-0.5 rounded-md border ${getBorderColor()} bg-[#090a12]`}
             >
               <div
-                className="relative flex h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 lg:h-18 lg:w-18 items-center justify-center rounded-sm shadow-inner overflow-hidden"
+                className="relative flex h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 items-center justify-center rounded-sm shadow-inner overflow-hidden"
                 style={{ background: generateGradient(token.id) }}
               >
-                {/* Placeholder text inside avatar if no image */}
-                <span className="text-lg font-bold text-white/40 mix-blend-overlay">
+                <Image
+                  src={token.imgUrl}
+                  alt={token.name}
+                  fill
+                  sizes="64px"
+                  className="object-cover"
+                  loading="lazy"
+                />
+                {/* Overlay letter for visual texture */}
+                <span className="pointer-events-none text-lg font-bold text-white/40 mix-blend-overlay">
                   {token.ticker[0]}
                 </span>
               </div>

@@ -6,11 +6,17 @@ import { PulseHeader } from '@/components/pulse/PulseHeader';
 import { PulseSkeleton } from '@/components/pulse/PulseSkeleton';
 import { useAppSelector, useAppDispatch } from '@/lib/hooks';
 import { useTokenSocket } from '@/lib/useTokenSocket';
+import { useTokensQuery } from '@/lib/useTokensQuery';
 import { setSortKey, type SortKey } from '@/lib/tokensSlice';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
 export default function Page() {
+  // Start WebSocket-style mock updates
   useTokenSocket();
+
+  // Fetch token data via React Query and hydrate Redux on success.
+  const { isFetching, isError, refetch } = useTokensQuery();
+
   const dispatch = useAppDispatch();
 
   // Memoized selector for better performance
@@ -39,10 +45,29 @@ export default function Page() {
       <div className="mx-auto flex flex-col gap-4 px-3 py-3 md:px-5 md:py-4 h-screen overflow-hidden">
         <PulseHeader currentSort={sortKey} onSortChange={handleSortChange} />
 
+        {/* React Query data error state (local to the table) */}
+        {isError && (
+          <div className="mb-2 flex items-center justify-between rounded-md border border-red-500/40 bg-red-950/40 px-3 py-2 text-[11px] text-red-100">
+            <span>Failed to load tokens. Please try again.</span>
+            <button
+              type="button"
+              onClick={() => refetch()}
+              className="rounded border border-red-400/60 bg-red-900/40 px-2 py-1 text-[10px] font-medium hover:bg-red-800/60"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+
         {isLoading ? (
           <PulseSkeleton />
         ) : (
           <>
+            {/* Background fetch shimmer/progressive indicator */}
+            {isFetching && (
+              <div className="mb-2 h-1 w-full animate-pulse bg-gradient-to-r from-indigo-500/0 via-indigo-500/60 to-indigo-500/0" />
+            )}
+
             {/* --- DESKTOP VIEW (Grid) --- */}
             <section className="hidden lg:grid lg:grid-cols-3 border border-slate-800 h-full">
               <TokenColumn title="New Pairs" tokens={memoizedNewPairs} />
