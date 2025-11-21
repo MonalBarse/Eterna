@@ -1,22 +1,25 @@
 'use client';
 import React from 'react';
-import { Token } from '@/lib/tokens'; // Ensure this imports the Interface, not the deleted mock data
+import { Token } from '@/lib/tokens';
 import { TokenCard } from '@/components/pulse/TokenCard';
 import { Zap, Menu, SlidersHorizontal } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-const COLUMN_HEIGHT_CLASS =
+const DEFAULT_HEIGHT_CLASS =
   'h-[calc(100vh-8rem)] md:h-[calc(100vh-9rem)] lg:h-[calc(100vh-10rem)]';
 
 interface TokenColumnProps {
   title: string;
   tokens: Token[];
+  scrollClass?: string;
+  // New prop to override height
 }
 
-export function TokenColumn({ title, tokens }: TokenColumnProps) {
+export function TokenColumn({ title, tokens, scrollClass }: TokenColumnProps) {
   return (
-    <div className="flex flex-col bg-[#05060f]/95 border-r border-slate-800 last:border-r-0">
+    <div className="flex flex-col bg-[#05060f]/95 border-r border-slate-800 last:border-r-0 h-full w-full">
       {/* Column header */}
-      <div className="flex items-center justify-between gap-2 border-b border-slate-800 px-3 py-2 bg-[#05060f]">
+      <div className="flex items-center justify-between gap-2 border-b border-slate-800 px-3 py-2 bg-[#05060f] shrink-0">
         <h2 className="text-sm font-semibold tracking-tight text-slate-100">
           {title}
         </h2>
@@ -55,13 +58,11 @@ export function TokenColumn({ title, tokens }: TokenColumnProps) {
       </div>
 
       {/* Scrollable body */}
-      <div className={`overflow-y-auto ${COLUMN_HEIGHT_CLASS} scroll-fade`}>
-        {/* We assume tokens are passed from the parent (Page.tsx) which gets them from Redux */}
+      <div className={cn("overflow-y-auto scroll-fade", scrollClass || DEFAULT_HEIGHT_CLASS)}>
         {tokens.map((token) => (
           <TokenCard key={token.id} token={token} />
         ))}
 
-        {/* Empty state if no tokens */}
         {tokens.length === 0 && (
            <div className="flex h-20 items-center justify-center text-xs text-slate-600">
              Loading tokens...

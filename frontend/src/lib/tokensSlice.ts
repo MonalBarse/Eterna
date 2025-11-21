@@ -35,7 +35,7 @@ const tokensSlice = createSlice({
     },
 
     // The "Heartbeat" Reducer (Complex)
-    updateTokenData(state, action: PayloadAction<any[]>) {
+    updateTokenData(state, action: PayloadAction<Array<{id: string; priceChange: number; txIncrement: number; volIncrement: number}>>) {
       const updates = action.payload;
 
       // Helper to find and update in any array

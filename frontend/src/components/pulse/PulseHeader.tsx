@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { TrendingUp, Search, Trophy, ArrowUpDown } from 'lucide-react';
+import { TrendingUp, Search, Trophy } from 'lucide-react';
 
 interface PulseHeaderProps {
   currentSort: 'mc' | 'vol' | 'change1m';
@@ -16,6 +16,8 @@ export function PulseHeader({ currentSort, onSortChange }: PulseHeaderProps) {
         <div className="ml-4 flex gap-1">
           {/* Sorting Buttons */}
           <button
+            title="Sort by 1M Change"
+            type='button'
             onClick={() => onSortChange('mc')}
             className={`px-2 py-1 text-[10px] rounded border ${
               currentSort === 'mc'
@@ -68,7 +70,11 @@ export function PulseHeader({ currentSort, onSortChange }: PulseHeaderProps) {
 
         {/* Requirement: Popover/Variety - Implementing a simple HTML select for speed if Popover component is missing, or use custom dropdown */}
         <div className="relative group">
-          <button className="rounded-full border border-slate-700 bg-slate-900/50 px-2 py-1 text-[11px] font-semibold hover:bg-slate-800">
+          <button
+            type="button"
+            title="display"
+            className="rounded-full border border-slate-700 bg-slate-900/50 px-2 py-1 text-[11px] font-semibold hover:bg-slate-800"
+          >
             Display ▾
           </button>
           {/* Simple CSS Dropdown (Popover equivalent) */}

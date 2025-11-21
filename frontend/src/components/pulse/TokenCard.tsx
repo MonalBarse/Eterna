@@ -5,10 +5,13 @@ import {
   TrendingUp,
   Target,
   Zap,
-  DollarSign,
   Clipboard,
-  Search,
   Users,
+  SearchIcon,
+  CandlestickChart,
+  TrophyIcon,
+  Crown,
+  Crosshair,
 } from 'lucide-react';
 import type { Token } from '@/lib/tokens';
 import {
@@ -94,14 +97,18 @@ function TokenCardComponent({ token }: { token: Token }) {
 
   // Trigger flash on price change
   useEffect(() => {
-    if (token.price > prevPrice.current) {
-      setFlashClass('bg-emerald-500/5 transition-none');
-      setTimeout(() => setFlashClass('transition-all duration-700'), 50);
-    } else if (token.price < prevPrice.current) {
-      setFlashClass('bg-red-500/5 transition-none');
-      setTimeout(() => setFlashClass('transition-all duration-700'), 50);
-    }
-    prevPrice.current = token.price;
+    const timer = setTimeout(() => {
+      if (token.price > prevPrice.current) {
+        setFlashClass('bg-emerald-500/5 transition-none');
+        setTimeout(() => setFlashClass('transition-all duration-700'), 50);
+      } else if (token.price < prevPrice.current) {
+        setFlashClass('bg-red-500/5 transition-none');
+        setTimeout(() => setFlashClass('transition-all duration-700'), 50);
+      }
+      prevPrice.current = token.price;
+    }, 0);
+    
+    return () => clearTimeout(timer);
   }, [token.price]);
 
   // Dynamic Styling
@@ -110,10 +117,11 @@ function TokenCardComponent({ token }: { token: Token }) {
   const txColor = token.change1m >= 0 ? 'bg-emerald-500' : 'bg-red-500';
 
   const iconBarData = [
-    { icon: DollarSign, value: '' }, // Placeholder for "Bonding curve" icon
-    { icon: Search, value: '' },
+    { icon: SearchIcon, value: '' }, // Placeholder for "Bonding curve" icon
     { icon: Users, value: String(token.holders) },
-    { icon: Clipboard, value: '0' },
+    { icon: CandlestickChart, value: '' },
+    { icon: TrophyIcon, value: '0' },
+    { icon: Crown, value: '0' },
   ];
 
   return (
@@ -148,53 +156,53 @@ function TokenCardComponent({ token }: { token: Token }) {
           </div>
 
           {/* Middle: Info & Metrics */}
-          <div className="flex flex-1 flex-col pt-0.5 min-w-0">
-            {/* Row 1: Name & Ticker */}
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <span className="truncate text-[13px] font-bold text-slate-200 hover:text-blue-400 transition-colors">
-                {token.name}
-              </span>
-              <span className="truncate text-[11px] font-medium text-slate-500">
-                {token.ticker}
-              </span>
-              <Clipboard className="h-3 w-3 text-slate-600 cursor-pointer hover:text-slate-400" />
-            </div>
+          <div className="flex flex-1 min-h-22 flex-col pt-0.5 min-w-0 justify-between">
+            <div className="flex flex-col">
+              {/* Row 1: Name & Ticker */}
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <span className="truncate text-[13px] font-bold text-slate-200 hover:text-blue-400 transition-colors">
+                  {token.name}
+                </span>
+                <span className="truncate text-[11px] font-medium text-slate-500">
+                  {token.ticker}
+                </span>
+                <Clipboard className="h-3 w-3 text-slate-600 cursor-pointer hover:text-slate-400" />
+              </div>
 
-            {/* Row 2: Time (Green) + Icons */}
-            <div className="flex items-center gap-3 mb-2">
-              {/* THE TIME INDICATOR (Requirement: Green) */}
-              <span className="text-[11px] font-bold text-emerald-400 min-w-[20px]">
-                {formatTimeAgo(token.createdAgo)}
-              </span>
+              {/* Row 2: Time (Green) + Icons */}
+              <div className="flex items-center gap-3 mb-2">
+                {/* THE TIME INDICATOR (Requirement: Green) */}
+                <span className="text-[11px] font-bold text-emerald-400 min-w-[20px]">
+                  {formatTimeAgo(token.createdAgo)}
+                </span>
 
-              <div className="flex items-center gap-2.5 border-l border-slate-800 pl-3">
-                {iconBarData.map((data, idx) => (
-                  <IconTextBadge
-                    key={idx}
-                    icon={data.icon}
-                    value={data.value}
-                  />
-                ))}
+                <div className="flex items-center gap-2.5 border-l border-slate-800 pl-3">
+                  {iconBarData.map((data, idx) => (
+                    <IconTextBadge
+                      key={idx}
+                      icon={data.icon}
+                      value={data.value}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
 
-            {/* Row 3: Pills (Percentages) */}
-            <div className="flex flex-wrap gap-1.5">
-              <PercentagePill
-                value={`${token.change1m.toFixed(0)}%`}
-                isPositive={token.change1m > 0}
-                icon={TrendingUp}
-              />
-              <PercentagePill
-                value={`${token.buyPressure.toFixed(0)}%`}
-                isPositive={token.buyPressure > 50}
-                icon={Target}
-              />
-              <PercentagePill
-                value="0%"
-                isPositive={false}
-                icon={Target} // Placeholder for other metrics
-              />
+            <div className="flex">
+              {/* Row 3: Pills (Percentages) */}
+              <div className="flex flex-wrap gap-1.5">
+                <PercentagePill
+                  value={`${token.change1m.toFixed(0)}%`}
+                  isPositive={token.change1m > 0}
+                  icon={TrendingUp}
+                />
+                <PercentagePill
+                  value={`${token.buyPressure.toFixed(0)}%`}
+                  isPositive={token.buyPressure > 50}
+                  icon={Crosshair} // Placeholder for other metrics
+                />
+                <PercentagePill value="0%" isPositive={false} icon={Target} />
+              </div>
             </div>
           </div>
 
@@ -237,7 +245,7 @@ function TokenCardComponent({ token }: { token: Token }) {
               </div>
             </div>
 
-            <button className=" flex mt-1 items-center justify-center gap-1.5 rounded bg-[#5c5e9e] hover:bg-[#4f5191] text-white px-2 py-1.5 text-[10px] font-bold transition-all shadow-lg hover:shadow-xl">
+            <button className=" flex mt-1 items-center justify-center gap-1.5 rounded-2xl bg-indigo-600 hover:bg-[#4f5191] text-white px-2 py-1.5 text-[10px] font-bold transition-all shadow-lg hover:shadow-xl">
               <Zap className="h-3 w-3 fill-white" />0 SOL
             </button>
           </div>
