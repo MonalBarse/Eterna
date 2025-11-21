@@ -78,7 +78,7 @@ Adapts to a tabbed interface to maintain information density without clutter.
 
 -----
 
-## 🛠️ Tech Stack
+## Tech Stack
 
   * **Framework:** [Next.js 16 (App Router)](https://nextjs.org/) - *Leveraging server components for initial layout.*
   * **Language:** TypeScript - *Strict mode enabled for robust typing.*
@@ -113,6 +113,6 @@ Adapts to a tabbed interface to maintain information density without clutter.
 
 4.  **Open the app:**
     Visit [http://localhost:3000](http://localhost:3000) to view the application.
------
 
-*Submitted by [Your Nam
+---
+Submitted By : **Monal Barse** **IIT BHU**
