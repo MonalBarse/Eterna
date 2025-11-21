@@ -136,7 +136,7 @@ export function TokenColumn({ title, tokens, chain, scrollClass }: TokenColumnPr
       </div>
 
       {/* Virtualized scrollable body */}
-      <div 
+      <div
         ref={scrollRef}
         className={cn("overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent scroll-fade", scrollClass || DEFAULT_HEIGHT_CLASS)}
       >

@@ -34,13 +34,11 @@ export function PulseHeader({
         <div
           className="ml-4 flex gap-1"
           aria-label="Select chain"
-          role="radiogroup"
         >
           <button
             aria-label="View Solana pairs"
             type="button"
-            role="radio"
-            aria-checked={chain === 'SOL'}
+            aria-pressed={chain === 'SOL'}
             onClick={() => onChainChange('SOL')}
             className={`px-2 py-1 text-[10px] rounded border transition-colors ${
               chain === 'SOL'
@@ -65,8 +63,7 @@ export function PulseHeader({
           <button
             aria-label="View BNB pairs"
             type="button"
-            role="radio"
-            aria-checked={chain === 'BNB'}
+            aria-pressed={chain === 'BNB'}
             onClick={() => onChainChange('BNB')}
             className={`px-2 py-1 text-[10px] rounded border transition-colors ${
               chain === 'BNB'
@@ -98,13 +95,11 @@ export function PulseHeader({
         {/* Sort toggle */}
         <div
           className="hidden md:inline-flex items-center rounded-full border border-slate-700 bg-slate-900/50 text-[11px] font-semibold overflow-hidden"
-          role="radiogroup"
           aria-label="Sort tokens"
         >
           <button
             type="button"
-            role="radio"
-            aria-checked={currentSort === 'mc'}
+            aria-pressed={currentSort === 'mc'}
             onClick={() => onSortChange('mc')}
             className={`px-3 py-1 transition-colors ${
               currentSort === 'mc'
@@ -116,8 +111,7 @@ export function PulseHeader({
           </button>
           <button
             type="button"
-            role="radio"
-            aria-checked={currentSort === 'vol'}
+            aria-pressed={currentSort === 'vol'}
             onClick={() => onSortChange('vol')}
             className={`px-3 py-1 transition-colors ${
               currentSort === 'vol'
