@@ -1,32 +1,43 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo } from 'react';
 import { TokenColumn } from '@/components/pulse/TokenColumn';
 import { PulseHeader } from '@/components/pulse/PulseHeader';
 import { PulseSkeleton } from '@/components/pulse/PulseSkeleton';
-import { useAppSelector } from '@/lib/hooks';
+import { useAppSelector, useAppDispatch } from '@/lib/hooks';
 import { useTokenSocket } from '@/lib/useTokenSocket';
+import { setSortKey, type SortKey } from '@/lib/tokensSlice';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import type { Token } from '@/lib/tokens';
 
 export default function Page() {
   useTokenSocket();
+  const dispatch = useAppDispatch();
 
-  const { newPairs, finalStretch, migrated, isLoading } = useAppSelector(
-    (state) => state.tokens
+  // Memoized selector for better performance
+  const { sortedNewPairs, sortedFinalStretch, sortedMigrated, sortKey, isLoading } = useAppSelector(
+    (state) => ({
+      sortedNewPairs: state.tokens.sortedNewPairs,
+      sortedFinalStretch: state.tokens.sortedFinalStretch,
+      sortedMigrated: state.tokens.sortedMigrated,
+      sortKey: state.tokens.sortKey,
+      isLoading: state.tokens.isLoading,
+    })
   );
 
-  const [sortKey, setSortKey] = useState<'mc' | 'vol' | 'change1m'>('mc');
+  // Memoize sorted data to prevent unnecessary re-sorts
+  const memoizedNewPairs = useMemo(() => sortedNewPairs, [sortedNewPairs]);
+  const memoizedFinalStretch = useMemo(() => sortedFinalStretch, [sortedFinalStretch]);
+  const memoizedMigrated = useMemo(() => sortedMigrated, [sortedMigrated]);
 
-  // Helper to sort on the fly
-  const sortTokens = (tokens: Token[]) => {
-    return [...tokens].sort((a, b) => b[sortKey] - a[sortKey]);
+  // Handler for sort key changes
+  const handleSortChange = (key: SortKey) => {
+    dispatch(setSortKey(key));
   };
 
   return (
     <main className="min-h-screen bg-[#05060a] text-slate-50">
       <div className="mx-auto flex flex-col gap-4 px-3 py-3 md:px-5 md:py-4 h-screen overflow-hidden">
-        <PulseHeader currentSort={sortKey} onSortChange={setSortKey} />
+        <PulseHeader currentSort={sortKey} onSortChange={handleSortChange} />
 
         {isLoading ? (
           <PulseSkeleton />
@@ -34,12 +45,12 @@ export default function Page() {
           <>
             {/* --- DESKTOP VIEW (Grid) --- */}
             <section className="hidden lg:grid lg:grid-cols-3 border border-slate-800 h-full">
-              <TokenColumn title="New Pairs" tokens={sortTokens(newPairs)} />
+              <TokenColumn title="New Pairs" tokens={memoizedNewPairs} />
               <TokenColumn
                 title="Final Stretch"
-                tokens={sortTokens(finalStretch)}
+                tokens={memoizedFinalStretch}
               />
-              <TokenColumn title="Migrated" tokens={sortTokens(migrated)} />
+              <TokenColumn title="Migrated" tokens={memoizedMigrated} />
             </section>
 
             {/* --- MOBILE VIEW (Tabs) --- */}
@@ -75,7 +86,7 @@ export default function Page() {
                 >
                   <TokenColumn
                     title="New Pairs"
-                    tokens={sortTokens(newPairs)}
+                    tokens={memoizedNewPairs}
                     scrollClass="h-[calc(100vh-11rem)]"
                   />
                 </TabsContent>
@@ -85,7 +96,7 @@ export default function Page() {
                 >
                   <TokenColumn
                     title="Final Stretch"
-                    tokens={sortTokens(finalStretch)}
+                    tokens={memoizedFinalStretch}
                     scrollClass="h-[calc(100vh-11rem)]"
                   />
                 </TabsContent>
@@ -95,7 +106,7 @@ export default function Page() {
                 >
                   <TokenColumn
                     title="Migrated"
-                    tokens={sortTokens(migrated)}
+                    tokens={memoizedMigrated}
                     scrollClass="h-[calc(100vh-11rem)]"
                   />
                 </TabsContent>

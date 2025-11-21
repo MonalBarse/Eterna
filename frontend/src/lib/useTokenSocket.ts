@@ -6,12 +6,12 @@ import { useAppDispatch } from './hooks';
 import { updateTokenData, incrementTime } from './tokensSlice';
 
 export function useTokenSocket() {
- const dispatch = useAppDispatch();
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
-    // Make it fast: 100ms for "High Frequency" feel
+    // 100ms interval to simulate high-frequency token updates
     const interval = setInterval(() => {
-      const updates = Array.from({ length: 8 }).map(() => ({
+      const updates = Array.from({ length: 3 }).map(() => ({
         id: `token-${Math.floor(Math.random() * 300)}`,
         // Make price changes significant enough to trigger flash
         priceChange: (Math.random() - 0.5) * 0.00005,
@@ -20,7 +20,7 @@ export function useTokenSocket() {
       }));
 
       dispatch(updateTokenData(updates));
-    }, 150); // <--- 150ms interval
+    }, 100);
 
     return () => clearInterval(interval);
   }, [dispatch]);

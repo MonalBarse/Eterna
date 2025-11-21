@@ -107,7 +107,7 @@ function TokenCardComponent({ token }: { token: Token }) {
       }
       prevPrice.current = token.price;
     }, 0);
-    
+
     return () => clearTimeout(timer);
   }, [token.price]);
 
@@ -115,6 +115,15 @@ function TokenCardComponent({ token }: { token: Token }) {
   const mcColor = token.change1m >= 0 ? 'text-emerald-400' : 'text-red-400';
   const priceColor = token.change1m >= 0 ? 'text-emerald-400' : 'text-red-400';
   const txColor = token.change1m >= 0 ? 'bg-emerald-500' : 'bg-red-500';
+
+  // Border color based on performance tiers
+  const getBorderColor = () => {
+    if (token.change1m > 20) return 'border-emerald-400/80'; // Exceptional
+    if (token.change1m > 10) return 'border-emerald-500/70'; // Strong positive
+    if (token.change1m > 0) return 'border-amber-400/70'; // Moderate positive
+    if (token.change1m > -10) return 'border-orange-500/70'; // Slight negative
+    return 'border-red-500/70'; // Strong negative
+  };
 
   const iconBarData = [
     { icon: SearchIcon, value: '' }, // Placeholder for "Bonding curve" icon
@@ -133,13 +142,17 @@ function TokenCardComponent({ token }: { token: Token }) {
           {/* Left: Avatar + Address */}
           <div className="flex w-1/6 flex-col items-center gap-2 pr-3">
             <div
-              className="relative flex h-18 w-18 flex-shrink-0 items-center justify-center rounded-md shadow-inner overflow-hidden border border-slate-700/50"
-              style={{ background: generateGradient(token.id) }}
+              className={`p-0.5 rounded-md border ${getBorderColor()} bg-[#090a12]`}
             >
-              {/* Placeholder text inside avatar if no image */}
-              <span className="text-lg font-bold text-white/40 mix-blend-overlay">
-                {token.ticker[0]}
-              </span>
+              <div
+                className="relative flex h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 lg:h-18 lg:w-18 items-center justify-center rounded-sm shadow-inner overflow-hidden"
+                style={{ background: generateGradient(token.id) }}
+              >
+                {/* Placeholder text inside avatar if no image */}
+                <span className="text-lg font-bold text-white/40 mix-blend-overlay">
+                  {token.ticker[0]}
+                </span>
+              </div>
             </div>
 
             {/* Tooltip for Address */}

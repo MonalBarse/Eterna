@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import React, { useRef, useEffect, useState, useMemo } from 'react';
 import { Token } from '@/lib/tokens';
 import { TokenCard } from '@/components/pulse/TokenCard';
 import { Zap, Menu, SlidersHorizontal } from 'lucide-react';
@@ -16,6 +16,43 @@ interface TokenColumnProps {
 }
 
 export function TokenColumn({ title, tokens, scrollClass }: TokenColumnProps) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [visibleRange, setVisibleRange] = useState({ start: 0, end: 20 });
+  const ITEM_HEIGHT = 120; // Approximate height of each TokenCard
+  const BUFFER = 5; // Extra items to render above/below viewport
+  const totalHeight = tokens.length * ITEM_HEIGHT;
+
+  // Optimized virtualization: only render visible items + buffer
+  useEffect(() => {
+    const scrollElement = scrollRef.current;
+    if (!scrollElement) return;
+
+    const handleScroll = () => {
+      const scrollTop = scrollElement.scrollTop;
+      const containerHeight = scrollElement.clientHeight;
+      
+      const start = Math.max(0, Math.floor(scrollTop / ITEM_HEIGHT) - BUFFER);
+      const end = Math.min(
+        tokens.length,
+        Math.ceil((scrollTop + containerHeight) / ITEM_HEIGHT) + BUFFER
+      );
+
+      setVisibleRange({ start, end });
+    };
+
+    // Initial calculation
+    handleScroll();
+
+    scrollElement.addEventListener('scroll', handleScroll, { passive: true });
+    return () => scrollElement.removeEventListener('scroll', handleScroll);
+  }, [tokens.length]);
+
+  // Memoize visible tokens to prevent unnecessary recalculations
+  const visibleTokens = useMemo(
+    () => tokens.slice(visibleRange.start, visibleRange.end),
+    [tokens, visibleRange.start, visibleRange.end]
+  );
+
   return (
     <div className="flex flex-col bg-[#05060f]/95 border-r border-slate-800 last:border-r-0 h-full w-full">
       {/* Column header */}
@@ -57,16 +94,25 @@ export function TokenColumn({ title, tokens, scrollClass }: TokenColumnProps) {
         </div>
       </div>
 
-      {/* Scrollable body */}
-      <div className={cn("overflow-y-auto scroll-fade", scrollClass || DEFAULT_HEIGHT_CLASS)}>
-        {tokens.map((token) => (
-          <TokenCard key={token.id} token={token} />
-        ))}
-
-        {tokens.length === 0 && (
-           <div className="flex h-20 items-center justify-center text-xs text-slate-600">
-             Loading tokens...
-           </div>
+      {/* Virtualized scrollable body */}
+      <div 
+        ref={scrollRef}
+        className={cn("overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent scroll-fade", scrollClass || DEFAULT_HEIGHT_CLASS)}
+      >
+        {tokens.length > 0 ? (
+          <div style={{ height: totalHeight, position: 'relative' }}>
+            <div
+              style={{ transform: `translateY(${visibleRange.start * ITEM_HEIGHT}px)` }}
+            >
+              {visibleTokens.map((token) => (
+                <TokenCard key={token.id} token={token} />
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="flex h-20 items-center justify-center text-xs text-slate-600">
+            Loading tokens...
+          </div>
         )}
       </div>
     </div>
