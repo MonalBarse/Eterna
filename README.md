@@ -4,9 +4,10 @@ A high-performance replica of the **Axiom Trade Pulse** interface. This project 
 
 [](https://eterna-opal.vercel.app/)
 
-\<br /\>
+<img width="1666" height="1055" alt="image" src="https://github.com/user-attachments/assets/baceb28f-de07-4ce4-af13-e15ed70b23e6" />
 
-## 📋 Project Overview
+
+## Project Overview
 
 The goal was to replicate the Axiom Pulse table, a tool used by traders to spot new token pairs in real-time. The challenge wasn't just visual accuracy, but engineering a system capable of handling rapid state changes (price, volume, transactions) without compromising UI fluidity or the 90+ Lighthouse score requirement.
 
