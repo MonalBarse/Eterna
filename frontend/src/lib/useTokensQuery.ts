@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAppDispatch } from '@/lib/hooks';
 import { hydrateTokens } from '@/lib/tokensSlice';
@@ -24,13 +25,20 @@ async function fetchTokens(): Promise<TokensResponse> {
 export function useTokensQuery() {
   const dispatch = useAppDispatch();
 
-  return useQuery<TokensResponse>({
+  const queryResult = useQuery<TokensResponse>({
     queryKey: ['tokens'],
     queryFn: fetchTokens,
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
-    onSuccess: (data) => {
-      dispatch(hydrateTokens(data));
-    },
   });
+
+  // When fresh data arrives, hydrate Redux. Using useEffect avoids
+  // relying on callback options that may differ across React Query versions.
+  useEffect(() => {
+    if (queryResult.data) {
+      dispatch(hydrateTokens(queryResult.data));
+    }
+  }, [dispatch, queryResult.data]);
+
+  return queryResult;
 }
